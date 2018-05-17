@@ -35,8 +35,8 @@ namespace FaceTutorial
         // NOTE: Free trial subscription keys are generated in the westcentralus region, so if you are using
         // a free trial subscription key, you should not need to change this region.
         private readonly IFaceServiceClient faceServiceClient =
-            new FaceServiceClient("e8a66ec58e52465884d728233c11efbf", "https://westcentralus.api.cognitive.microsoft.com/face/v1.0");
-
+           //new FaceServiceClient("e8a66ec58e52465884d728233c11efbf", "https://westcentralus.api.cognitive.microsoft.com/face/v1.0");
+           new FaceServiceClient("ff0840bd35ca4326aaeebc592ca583a8", "https://westcentralus.api.cognitive.microsoft.com/face/v1.0");
         Face[] faces;                   // The list of detected faces.
         String[] faceDescriptions;      // The list of descriptions for the detected faces.
         double resizeFactor;            // The resize factor for the displayed image.
