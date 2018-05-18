@@ -1,4 +1,14 @@
-﻿using System;
+﻿using Microsoft.ProjectOxford.Common.Contract;
+using Microsoft.ProjectOxford.Face;
+using Microsoft.ProjectOxford.Face.Contract;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Processing.Convolution;
+using SixLabors.ImageSharp.Processing.Drawing;
+using SixLabors.ImageSharp.Processing.Drawing.Brushes;
+using SixLabors.ImageSharp.Processing.Drawing.Pens;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -7,18 +17,6 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.ProjectOxford.Common.Contract;
-using Microsoft.ProjectOxford.Face;
-using Microsoft.ProjectOxford.Face.Contract;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Convolution;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Drawing.Pens;
-using SixLabors.ImageSharp.Processing.Drawing.Brushes;
-using SixLabors.Primitives;
-using System.Drawing;
 
 namespace FaceTutorial
 {
@@ -54,38 +52,35 @@ namespace FaceTutorial
             var openDlg = new Microsoft.Win32.OpenFileDialog();
 
             openDlg.Filter = "JPEG Image(*.jpg)|*.jpg";
-            bool? result = openDlg.ShowDialog(this);
 
-            // Return if canceled.
-            if (!(bool)result)
+            // Only do something if user picked a file
+            if ((bool)openDlg.ShowDialog(this))
             {
-                return;
+                // Display the image file.
+                string filePath = openDlg.FileName;
+
+                Uri fileUri = new Uri(filePath);
+                BitmapImage bitmapSource = new BitmapImage();
+                bitmapSource.BeginInit();
+                bitmapSource.CacheOption = BitmapCacheOption.None;
+                bitmapSource.UriSource = fileUri;
+                bitmapSource.EndInit();
+
+                FacePhoto.Source = bitmapSource;
+
+                // Detect any faces in the image.
+                Title = "Detecting...";
+                faces = await UploadAndDetectFaces(filePath);
+                Title = String.Format("Detection Finished. {0} face(s) detected", faces.Length);
+
+                FaceRectangle[] faceRectangles = new FaceRectangle[faces.Length];
+                for (int i = 0; i < faces.Length; i++)
+                {
+                    faceRectangles[i] = faces[i].FaceRectangle;
+                }
+                //blur faces and also draw a rectangle around each face.
+                BlurFaces(faceRectangles, filePath);
             }
-
-            // Display the image file.
-            string filePath = openDlg.FileName;
-
-            Uri fileUri = new Uri(filePath);
-            BitmapImage bitmapSource = new BitmapImage();
-            bitmapSource.BeginInit();
-            bitmapSource.CacheOption = BitmapCacheOption.None;
-            bitmapSource.UriSource = fileUri;
-            bitmapSource.EndInit();
-
-            FacePhoto.Source = bitmapSource;
-
-            // Detect any faces in the image.
-            Title = "Detecting...";
-            faces = await UploadAndDetectFaces(filePath);
-            Title = String.Format("Detection Finished. {0} face(s) detected", faces.Length);
-
-            FaceRectangle[] faceRectangles = new FaceRectangle[faces.Length];
-            for( int i=0; i<faces.Length;i++)
-            {
-                faceRectangles[i] = faces[i].FaceRectangle;
-            }
-            //blur faces and also draw a rectangle around each face.
-            BlurFaces(faceRectangles, filePath);
         }
 
         // Displays the face description when the mouse is over a face rectangle.
@@ -134,7 +129,7 @@ namespace FaceTutorial
             using (FileStream stream = File.OpenRead(sourceImage))
             {
                 image = SixLabors.ImageSharp.Image.Load(stream);
-                IPen<Rgba32> pen = new Pen<Rgba32>(new SolidBrush<Rgba32>(Rgba32.Red) ,2);
+                IPen<Rgba32> pen = new Pen<Rgba32>(new SolidBrush<Rgba32>(Rgba32.Red), 2);
                 foreach (var faceRect in faceRects)
                 {
                     var rectangle = new SixLabors.Primitives.Rectangle(
@@ -142,7 +137,8 @@ namespace FaceTutorial
                         faceRect.Top,
                         faceRect.Width,
                         faceRect.Height);
-                    image.Mutate(img => {
+                    image.Mutate(img =>
+                    {
                         img.BoxBlur<Rgba32>(20, rectangle);
                         img.Draw(pen, rectangle);
                     });
@@ -155,7 +151,7 @@ namespace FaceTutorial
             BitmapImage bitmap = new BitmapImage();
             bitmap.BeginInit();
             //bitmap.CacheOption = BitmapCacheOption.OnLoad;
-           // bitmap.UriSource = null;
+            // bitmap.UriSource = null;
             bitmap.StreamSource = memoryStream;
             bitmap.EndInit();
 
