@@ -1,44 +1,15 @@
-﻿using Microsoft.ProjectOxford.Common.Contract;
-using Microsoft.ProjectOxford.Face;
+﻿using FaceTutorial.ViewModel;
+using Microsoft.ProjectOxford.Common.Contract;
 using Microsoft.ProjectOxford.Face.Contract;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.ImageSharp.Processing.Convolution;
-using SixLabors.ImageSharp.Processing.Drawing;
-using SixLabors.ImageSharp.Processing.Drawing.Brushes;
-using SixLabors.ImageSharp.Processing.Drawing.Pens;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace FaceTutorial
 {
     public partial class MainWindow : Window
     {
-        // Replace the first parameter with your valid subscription key.
-        //
-        // Replace or verify the region in the second parameter.
-        //
-        // You must use the same region in your REST API call as you used to obtain your subscription keys.
-        // For example, if you obtained your subscription keys from the westus region, replace
-        // "westcentralus" in the URI below with "westus".
-        //
-        // NOTE: Free trial subscription keys are generated in the westcentralus region, so if you are using
-        // a free trial subscription key, you should not need to change this region.
-        private readonly IFaceServiceClient faceServiceClient =
-           //new FaceServiceClient("e8a66ec58e52465884d728233c11efbf", "https://westcentralus.api.cognitive.microsoft.com/face/v1.0");
-           new FaceServiceClient("ff0840bd35ca4326aaeebc592ca583a8", "https://westcentralus.api.cognitive.microsoft.com/face/v1.0");
-        Face[] faces;                   // The list of detected faces.
-        String[] faceDescriptions;      // The list of descriptions for the detected faces.
-        double resizeFactor;            // The resize factor for the displayed image.
-
         public MainWindow()
         {
             InitializeComponent();
@@ -56,36 +27,21 @@ namespace FaceTutorial
             // Only do something if user picked a file
             if ((bool)openDlg.ShowDialog(this))
             {
-                // Display the image file.
+                // Display and blur faces in the image file.
                 string filePath = openDlg.FileName;
 
-                Uri fileUri = new Uri(filePath);
-                BitmapImage bitmapSource = new BitmapImage();
-                bitmapSource.BeginInit();
-                bitmapSource.CacheOption = BitmapCacheOption.None;
-                bitmapSource.UriSource = fileUri;
-                bitmapSource.EndInit();
-
-                FacePhoto.Source = bitmapSource;
-
-                // Detect any faces in the image.
-                Title = "Detecting...";
-                faces = await UploadAndDetectFaces(filePath);
-                Title = String.Format("Detection Finished. {0} face(s) detected", faces.Length);
-
-                FaceRectangle[] faceRectangles = new FaceRectangle[faces.Length];
-                for (int i = 0; i < faces.Length; i++)
+                var viewModel = (PhotoViewModel)DataContext;
+                if (viewModel.BlurFacesCommand.CanExecute(filePath))
                 {
-                    faceRectangles[i] = faces[i].FaceRectangle;
+                    viewModel.BlurFacesCommand.Execute(filePath);
                 }
-                //blur faces and also draw a rectangle around each face.
-                BlurFaces(faceRectangles, filePath);
             }
         }
 
         // Displays the face description when the mouse is over a face rectangle.
         private void FacePhoto_MouseMove(object sender, MouseEventArgs e)
         {
+            /*
             // If the REST call has not completed, return from this method.
             if (faces == null)
                 return;
@@ -121,71 +77,7 @@ namespace FaceTutorial
             // If the mouse is not over a face rectangle.
             if (!mouseOverFace)
                 faceDescriptionStatusBar.Text = "Place the mouse pointer over a face to see the face description.";
-        }
-
-        private void BlurFaces(FaceRectangle[] faceRects, string sourceImage)
-        {
-            Image<Rgba32> image;
-            using (FileStream stream = File.OpenRead(sourceImage))
-            {
-                image = SixLabors.ImageSharp.Image.Load(stream);
-                IPen<Rgba32> pen = new Pen<Rgba32>(new SolidBrush<Rgba32>(Rgba32.Red), 2);
-                foreach (var faceRect in faceRects)
-                {
-                    var rectangle = new SixLabors.Primitives.Rectangle(
-                        faceRect.Left,
-                        faceRect.Top,
-                        faceRect.Width,
-                        faceRect.Height);
-                    image.Mutate(img =>
-                    {
-                        img.BoxBlur<Rgba32>(20, rectangle);
-                        img.Draw(pen, rectangle);
-                    });
-                }
-            }
-
-            // stackoverflow.com/questions/5782913/how-to-convert-from-type-image-to-type-bitmapimage
-            MemoryStream memoryStream = new MemoryStream();
-            image.Save(memoryStream, new SixLabors.ImageSharp.Formats.Png.PngEncoder());
-            BitmapImage bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            //bitmap.CacheOption = BitmapCacheOption.OnLoad;
-            // bitmap.UriSource = null;
-            bitmap.StreamSource = memoryStream;
-            bitmap.EndInit();
-
-            FacePhoto.Source = bitmap;
-        }
-
-        // Uploads the image file and calls Detect Faces.
-        private async Task<Face[]> UploadAndDetectFaces(string imageFilePath)
-        {
-            // The list of Face attributes to return.
-            IEnumerable<FaceAttributeType> faceAttributes =
-                new FaceAttributeType[] { FaceAttributeType.Gender, FaceAttributeType.Age, FaceAttributeType.Smile, FaceAttributeType.Emotion, FaceAttributeType.Glasses, FaceAttributeType.Hair };
-
-            // Call the Face API.
-            try
-            {
-                using (Stream imageFileStream = File.OpenRead(imageFilePath))
-                {
-                    Face[] faces = await faceServiceClient.DetectAsync(imageFileStream, returnFaceId: true, returnFaceLandmarks: false, returnFaceAttributes: faceAttributes);
-                    return faces;
-                }
-            }
-            // Catch and display Face API errors.
-            catch (FaceAPIException f)
-            {
-                MessageBox.Show(f.ErrorMessage, f.ErrorCode);
-                return new Face[0];
-            }
-            // Catch and display all other errors.
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message, "Error");
-                return new Face[0];
-            }
+                */
         }
 
         // Returns a string that describes the given face.
