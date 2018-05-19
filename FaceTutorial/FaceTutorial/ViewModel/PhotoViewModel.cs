@@ -1,5 +1,6 @@
 ﻿using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Command;
+using Microsoft.ProjectOxford.Common.Contract;
 using Microsoft.ProjectOxford.Face;
 using Microsoft.ProjectOxford.Face.Contract;
 using SixLabors.ImageSharp;
@@ -12,6 +13,7 @@ using SixLabors.ImageSharp.Processing.Drawing.Pens;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -36,10 +38,6 @@ namespace FaceTutorial.ViewModel
         private readonly IFaceServiceClient faceServiceClient =
            //new FaceServiceClient("e8a66ec58e52465884d728233c11efbf", "https://westcentralus.api.cognitive.microsoft.com/face/v1.0");
            new FaceServiceClient("ff0840bd35ca4326aaeebc592ca583a8", "https://westcentralus.api.cognitive.microsoft.com/face/v1.0");
-
-        private Face[] faces;                   // The list of detected faces.
-        private String[] faceDescriptions;      // The list of descriptions for the detected faces.
-        private double resizeFactor;            // The resize factor for the displayed image.
         #endregion
 
         public PhotoViewModel()
@@ -66,13 +64,15 @@ namespace FaceTutorial.ViewModel
 
             // Detect any faces in the image.
             Title = "Detecting...";
-            faces = await UploadAndDetectFaces(filePath);
-            Title = String.Format("Detection Finished. {0} face(s) detected", faces.Length);
+            Faces = await UploadAndDetectFaces(filePath);
+            Title = String.Format("Detection Finished. {0} face(s) detected", Faces.Length);
 
-            FaceRectangle[] faceRectangles = new FaceRectangle[faces.Length];
-            for (int i = 0; i < faces.Length; i++)
+            FaceRectangle[] faceRectangles = new FaceRectangle[Faces.Length];
+            FaceDescriptions = new string[Faces.Length];
+            for (int i = 0; i < Faces.Length; i++)
             {
-                faceRectangles[i] = faces[i].FaceRectangle;
+                faceRectangles[i] = Faces[i].FaceRectangle;
+                FaceDescriptions[i] = FaceDescription(Faces[i]);
             }
             // blur faces and also draw a rectangle around each face.
             BlurFaces(faceRectangles, filePath);
@@ -88,6 +88,12 @@ namespace FaceTutorial.ViewModel
         #endregion
 
         #region Properties
+
+        ///<summary> The list of descriptions for the detected faces. </summary>
+        public String[] FaceDescriptions { get; private set; }
+
+        ///<summary> The list of detected faces. </summary>
+        public Face[] Faces { get; private set; }                
 
         private ImageSource _photoSource;
         public ImageSource PhotoSource
@@ -183,6 +189,58 @@ namespace FaceTutorial.ViewModel
             bitmap.EndInit();
 
             PhotoSource = bitmap;
+        }
+
+        // Returns a string that describes the given face.
+        private string FaceDescription(Face face)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("Face: ");
+
+            // Add the gender, age, and smile.
+            sb.Append(face.FaceAttributes.Gender);
+            sb.Append(", ");
+            sb.Append(face.FaceAttributes.Age);
+            sb.Append(", ");
+            sb.Append(String.Format("smile {0:F1}%, ", face.FaceAttributes.Smile * 100));
+
+            // Add the emotions. Display all emotions over 10%.
+            sb.Append("Emotion: ");
+            EmotionScores emotionScores = face.FaceAttributes.Emotion;
+            if (emotionScores.Anger >= 0.1f) sb.Append(String.Format("anger {0:F1}%, ", emotionScores.Anger * 100));
+            if (emotionScores.Contempt >= 0.1f) sb.Append(String.Format("contempt {0:F1}%, ", emotionScores.Contempt * 100));
+            if (emotionScores.Disgust >= 0.1f) sb.Append(String.Format("disgust {0:F1}%, ", emotionScores.Disgust * 100));
+            if (emotionScores.Fear >= 0.1f) sb.Append(String.Format("fear {0:F1}%, ", emotionScores.Fear * 100));
+            if (emotionScores.Happiness >= 0.1f) sb.Append(String.Format("happiness {0:F1}%, ", emotionScores.Happiness * 100));
+            if (emotionScores.Neutral >= 0.1f) sb.Append(String.Format("neutral {0:F1}%, ", emotionScores.Neutral * 100));
+            if (emotionScores.Sadness >= 0.1f) sb.Append(String.Format("sadness {0:F1}%, ", emotionScores.Sadness * 100));
+            if (emotionScores.Surprise >= 0.1f) sb.Append(String.Format("surprise {0:F1}%, ", emotionScores.Surprise * 100));
+
+            // Add glasses.
+            sb.Append(face.FaceAttributes.Glasses);
+            sb.Append(", ");
+
+            // Add hair.
+            sb.Append("Hair: ");
+
+            // Display baldness confidence if over 1%.
+            if (face.FaceAttributes.Hair.Bald >= 0.01f)
+                sb.Append(String.Format("bald {0:F1}% ", face.FaceAttributes.Hair.Bald * 100));
+
+            // Display all hair color attributes over 10%.
+            HairColor[] hairColors = face.FaceAttributes.Hair.HairColor;
+            foreach (HairColor hairColor in hairColors)
+            {
+                if (hairColor.Confidence >= 0.1f)
+                {
+                    sb.Append(hairColor.Color.ToString());
+                    sb.Append(String.Format(" {0:F1}% ", hairColor.Confidence * 100));
+                }
+            }
+
+            // Return the built string.
+            return sb.ToString();
         }
         #endregion
     }
