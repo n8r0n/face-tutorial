@@ -17,7 +17,7 @@ namespace FaceTutorial
         }
 
         ///<summary> Displays the image and calls Detect Faces. </summary>
-        private async void BrowseButton_Click(object sender, RoutedEventArgs e)
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
             // Get the image file to scan from the user.
             var openDlg = new Microsoft.Win32.OpenFileDialog();
