@@ -16,7 +16,7 @@ namespace FaceTutorial
             viewModel = (PhotoViewModel)DataContext;
         }
 
-        // Displays the image and calls Detect Faces.
+        ///<summary> Displays the image and calls Detect Faces. </summary>
         private async void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
             // Get the image file to scan from the user.
@@ -37,7 +37,7 @@ namespace FaceTutorial
             }
         }
 
-        // Displays the face description when the mouse is over a face rectangle.
+        ///<summary> Displays the face description when the mouse is over a face rectangle. </summary>
         private void FacePhoto_MouseMove(object sender, MouseEventArgs e)
         {
             // If the REST call has not completed, return from this method.

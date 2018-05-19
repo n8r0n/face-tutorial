@@ -96,6 +96,7 @@ namespace FaceTutorial.ViewModel
         public Face[] Faces { get; private set; }                
 
         private ImageSource _photoSource;
+        /// <summary> The source data for the View's photo. </summary>
         public ImageSource PhotoSource
         {
             get
@@ -110,6 +111,7 @@ namespace FaceTutorial.ViewModel
         }
 
         private string _title;
+        /// <summary> A title to display app name or status. </summary>
         public string Title
         {
             get
@@ -126,7 +128,7 @@ namespace FaceTutorial.ViewModel
 
         #region Private API methods
 
-        // Uploads the image file and calls Detect Faces.
+        ///<summary> Uploads the image file and calls Detect Faces. </summary>
         private async Task<Face[]> UploadAndDetectFaces(string imageFilePath)
         {
             // The list of Face attributes to return.
@@ -156,6 +158,11 @@ namespace FaceTutorial.ViewModel
             }
         }
 
+        /// <summary>
+        /// Blur faces inside the given rectangular areas.
+        /// </summary>
+        /// <param name="faceRects">Rectangles defining the areas to be blurred.</param>
+        /// <param name="sourceImage">The original image to blur.</param>
         private void BlurFaces(FaceRectangle[] faceRects, string sourceImage)
         {
             Image<Rgba32> image;
@@ -191,7 +198,7 @@ namespace FaceTutorial.ViewModel
             PhotoSource = bitmap;
         }
 
-        // Returns a string that describes the given face.
+        ///<summary> Returns a string that describes the given face. </summary>
         private string FaceDescription(Face face)
         {
             StringBuilder sb = new StringBuilder();
