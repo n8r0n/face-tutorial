@@ -22,6 +22,7 @@ namespace FaceTutorial.ViewModel
 {
     public class PhotoViewModel : ViewModelBase
     {
+        #region Class Members
         // Replace the first parameter with your valid subscription key.
         //
         // Replace or verify the region in the second parameter.
@@ -39,11 +40,14 @@ namespace FaceTutorial.ViewModel
         private Face[] faces;                   // The list of detected faces.
         private String[] faceDescriptions;      // The list of descriptions for the detected faces.
         private double resizeFactor;            // The resize factor for the displayed image.
+        #endregion
 
         public PhotoViewModel()
         {
             BlurFacesCommand = new RelayCommand<object>(OnBlurFacesCommandAsync, CanBlurFacesCommand);
         }
+
+        #region Commands
 
         public ICommand BlurFacesCommand { get; private set; }
 
@@ -81,6 +85,10 @@ namespace FaceTutorial.ViewModel
             return (obj is string && obj != null);
         }
 
+        #endregion
+
+        #region Properties
+
         private ImageSource _photoSource;
         public ImageSource PhotoSource
         {
@@ -108,7 +116,9 @@ namespace FaceTutorial.ViewModel
                 RaisePropertyChanged("Title");
             }
         }
+        #endregion
 
+        #region Private API methods
 
         // Uploads the image file and calls Detect Faces.
         private async Task<Face[]> UploadAndDetectFaces(string imageFilePath)
@@ -174,5 +184,6 @@ namespace FaceTutorial.ViewModel
 
             PhotoSource = bitmap;
         }
+        #endregion
     }
 }
