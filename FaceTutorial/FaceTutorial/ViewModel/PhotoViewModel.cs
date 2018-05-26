@@ -1,5 +1,5 @@
 ﻿using GalaSoft.MvvmLight;
-using GalaSoft.MvvmLight.Command;
+using GalaSoft.MvvmLight.CommandWpf;
 using Microsoft.ProjectOxford.Common.Contract;
 using Microsoft.ProjectOxford.Face;
 using Microsoft.ProjectOxford.Face.Contract;
@@ -43,9 +43,27 @@ namespace FaceTutorial.ViewModel
         public PhotoViewModel()
         {
             BlurFacesCommand = new RelayCommand<object>(OnBlurFacesCommandAsync, CanBlurFacesCommand);
+            SaveCommand = new RelayCommand(OnSaveCommand, CanSaveCommand);
+            ComplicatedSaveCommand = new ComplicatedSaveCommand();
         }
 
         #region Commands
+
+        public ICommand ComplicatedSaveCommand { get; private set; }
+
+        public ICommand SaveCommand { get; private set; }
+
+        private void OnSaveCommand()
+        {
+            Console.WriteLine("Save Command Goes here!");
+        }
+
+        private bool CanSaveCommand()
+        {
+            return PhotoSource != null;
+            // TODO: use this if Face API key is valid:
+            //return Faces != null;
+        }
 
         public ICommand BlurFacesCommand { get; private set; }
 
@@ -63,9 +81,9 @@ namespace FaceTutorial.ViewModel
             PhotoSource = bitmapSource;
 
             // Detect any faces in the image.
-            Title = "Detecting...";
+            Message = "Detecting...";
             Faces = await UploadAndDetectFaces(filePath);
-            Title = String.Format("Detection Finished. {0} face(s) detected", Faces.Length);
+            Message = String.Format("Detection Finished. {0} face(s) detected", Faces.Length);
 
             FaceRectangle[] faceRectangles = new FaceRectangle[Faces.Length];
             FaceDescriptions = new string[Faces.Length];
@@ -89,6 +107,17 @@ namespace FaceTutorial.ViewModel
 
         #region Properties
 
+        /// <summary>
+        /// A string specifying which file types this application can open.
+        /// </summary>
+        public string ImageFileTypes
+        {
+            get
+            {
+                return "JPEG Image(*.jpg)|*.jpg";
+            }
+        }
+
         ///<summary> The list of descriptions for the detected faces. </summary>
         public String[] FaceDescriptions { get; private set; }
 
@@ -110,18 +139,18 @@ namespace FaceTutorial.ViewModel
             }
         }
 
-        private string _title;
+        private string _message;
         /// <summary> A title to display app name or status. </summary>
-        public string Title
+        public string Message
         {
             get
             {
-                return _title;
+                return _message;
             }
             private set
             {
-                _title = value;
-                RaisePropertyChanged("Title");
+                _message = value;
+                RaisePropertyChanged("Message");
             }
         }
         #endregion

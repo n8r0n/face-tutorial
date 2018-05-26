@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:VM="clr-namespace:FaceTutorial.ViewModel"
         DataContext="{Binding Source={StaticResource Locator}, Path=MainViewModel}"
-        Title="{Binding Title, Mode=OneWay}" Height="700" Width="960">
+        Title="{Binding Message, Mode=OneWay}" Height="700" Width="960">
 
     <Grid x:Name="BackPanel">
         <Image x:Name="FacePhoto" Stretch="Uniform" Margin="0,0,0,50" MouseMove="FacePhoto_MouseMove" Source="{Binding PhotoSource}" />
@@ -11,6 +11,22 @@
             <Button x:Name="BrowseButton" Width="72" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left"
                     Content="Browse..."
                     Click="BrowseButton_Click" />
+            
+            <Button x:Name="SaveButton"   Width="72" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Left"
+                    Content="Save"
+                    Command="{Binding SaveCommand}">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}" >
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
             <StatusBar VerticalAlignment="Bottom">
                 <StatusBarItem>
                     <TextBlock Name="faceDescriptionStatusBar" />

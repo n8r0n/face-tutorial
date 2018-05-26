@@ -22,7 +22,7 @@ namespace FaceTutorial
             // Get the image file to scan from the user.
             var openDlg = new Microsoft.Win32.OpenFileDialog();
 
-            openDlg.Filter = "JPEG Image(*.jpg)|*.jpg";
+            openDlg.Filter = viewModel.ImageFileTypes;
 
             // Only do something if user picked a file
             if ((bool)openDlg.ShowDialog(this))
