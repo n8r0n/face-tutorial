@@ -8,6 +8,19 @@ namespace ViewModelUnitTest
     [TestClass]
     public class PhotoViewModelUnitTest
     {
+        /// <summary>
+        /// This is the location on the tester's machine with a JPG file containing faces.
+        /// May need to update code below if the number of faces is not correct.
+        /// </summary>
+        private static string PhotoFilePath;
+
+        [ClassInitialize]
+        public static void TestClassInitialize(TestContext context)
+        {
+            // This variable is defined in the UnitTest.runsettings file. Each tester should change this for their environment:
+            PhotoFilePath = context.Properties["FacesPhotoFilePath"].ToString();
+        }
+
         [TestMethod]
         public void TestMethod1()
         {
@@ -22,16 +35,16 @@ namespace ViewModelUnitTest
         {
             // Create a view model and ask it to detect and blur faces
             PhotoViewModel vm = new PhotoViewModel();
-            bool canExecute = vm.BlurFacesCommand.CanExecute("C:\\Users\\nscan\\Desktop\\faces.jpg");  // TODO: hardcoded file path
-            Assert.IsTrue(canExecute);
+            bool canExecute = vm.BlurFacesCommand.CanExecute(PhotoFilePath);
+            Assert.IsTrue(canExecute, "photo file path not valid");
 
-            vm.BlurFacesCommand.Execute("C:\\Users\\nscan\\Desktop\\faces.jpg");
+            vm.BlurFacesCommand.Execute(PhotoFilePath);
 
             // TODO: fix this sleep !
             Thread.Sleep(10000);
 
-            Assert.IsNotNull(vm.Faces);
-            Assert.IsTrue(vm.Faces.Length == 6);
+            Assert.IsNotNull(vm.Faces, "no faces were found");
+            Assert.IsTrue(vm.Faces.Length == 6, "the correct number of faces were not detected");
         }
     }
 }
